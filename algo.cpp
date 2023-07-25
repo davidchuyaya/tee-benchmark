@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <sstream>
 #include <iostream>
+#include <unistd.h>
 #include "algo.hpp"
 
 /**
@@ -139,4 +140,25 @@ int aes128Decrypt(const unsigned char* input, const int inputLen, unsigned char*
     outputLen += len;
     EVP_CIPHER_CTX_free(context);
     return outputLen;
+}
+
+FILE* open(std::string filename) {
+    return fopen(filename.c_str(), "wb+");
+}
+
+void write(FILE* file, const unsigned char* buffer, const int bufferLen) {
+    fwrite(buffer, sizeof(*buffer), bufferLen, file);
+    fsync(fileno(file));
+}
+
+void fileSeekToHead(FILE* file) {
+    fseek(file, 0, SEEK_SET);
+}
+
+void read(FILE* file, unsigned char* buffer, const int bufferLen) {
+    fread(buffer, sizeof(unsigned char), bufferLen, file);
+}
+
+void close(FILE* file) {
+    fclose(file);
 }

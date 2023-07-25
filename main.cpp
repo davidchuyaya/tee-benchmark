@@ -27,6 +27,15 @@ int main() {
     plaintext[plaintextLen] = '\0';
     std::cout << "Plaintext: " << plaintext << std::endl;
 
+    // Test file write/read
+    FILE* file = open("test.bin");
+    write(file, (const unsigned char*) input.c_str(), input.size());
+    fileSeekToHead(file);
+    unsigned char buffer[input.size()];
+    read(file, buffer, input.size());
+    std::cout << "Read from file: " << buffer << std::endl; 
+    close(file);
+
     randomCleanup(eng);
     return 0;
 }
