@@ -9,7 +9,7 @@
 /**
  * From https://stackoverflow.com/a/40155962/4028758
 */
-std::string sha256(const std::string input) {
+std::string sha256(const unsigned char* input, const int inputLen) {
     unsigned char hash[EVP_MAX_MD_SIZE];
     unsigned int lengthOfHash = 0;
     EVP_MD_CTX* context = EVP_MD_CTX_new();
@@ -23,7 +23,7 @@ std::string sha256(const std::string input) {
         std::cerr << "EVP_DigestInit_ex() failed." << std::endl;
         abort();
     }
-    rc = EVP_DigestUpdate(context, input.c_str(), input.size());
+    rc = EVP_DigestUpdate(context, input, inputLen);
     if (rc != 1) {
         std::cerr << "EVP_DigestUpdate() failed." << std::endl;
         abort();
@@ -140,25 +140,4 @@ int aes128Decrypt(const unsigned char* input, const int inputLen, unsigned char*
     outputLen += len;
     EVP_CIPHER_CTX_free(context);
     return outputLen;
-}
-
-FILE* open(std::string filename) {
-    return fopen(filename.c_str(), "wb+");
-}
-
-void write(FILE* file, const unsigned char* buffer, const int bufferLen) {
-    fwrite(buffer, sizeof(*buffer), bufferLen, file);
-    fsync(fileno(file));
-}
-
-void fileSeekToHead(FILE* file) {
-    fseek(file, 0, SEEK_SET);
-}
-
-void read(FILE* file, unsigned char* buffer, const int bufferLen) {
-    fread(buffer, sizeof(unsigned char), bufferLen, file);
-}
-
-void close(FILE* file) {
-    fclose(file);
 }
