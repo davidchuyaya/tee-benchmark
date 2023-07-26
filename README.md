@@ -42,6 +42,7 @@ I will assume your resource group's name is `<myResourceGroup>`.
 
 We will use Ubuntu 20.04 LTS since that is the only version supported by [CCF](https://github.com/microsoft/CCF) at the moment and we may one day use some of their code.
 The VM name and admin username are arbitrary.
+Make sure to change the VM name between runs.
 
 We will select VMs that use the same hardware to compare between confidential and non-confidential VMs.
 The set of supported sizes for Confidential VMs can be found [here](https://learn.microsoft.com/en-us/azure/confidential-computing/virtual-machine-solutions-amd).
@@ -67,7 +68,8 @@ If launching a Confidential VM, replace the last 3 lines above with:
   --size Standard_DC8as_v5 \
   --image Canonical:0001-com-ubuntu-confidential-vm-focal:20_04-lts-cvm:latest \
   --security-type ConfidentialVM \
-  --os-disk-security-encryption-type VMGuestStateOnly
+  --os-disk-security-encryption-type VMGuestStateOnly \
+  --enable-vtpm
 ```
 
 Once launched, write down the public IP of the VM. I will assume your VM's IP is <IP>. We can now SSH into the VM:
