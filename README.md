@@ -39,30 +39,73 @@ We will roughly follow the steps outlined in the [Azure tutorial](https://learn.
 
 I will assume you have an existing resource group, or will create one by following [the tutorial](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal).
 I will assume your resource group's name is `<myResourceGroup>`.
-
-We will use Ubuntu 20.04 LTS since that is the only version supported by [CCF](https://github.com/microsoft/CCF) at the moment and we may one day use some of their code.
-The VM name and admin username are arbitrary.
-Make sure to change the VM name between runs.
-
-We will select VMs that use the same hardware to compare between confidential and non-confidential VMs.
-The set of supported sizes for Confidential VMs can be found [here](https://learn.microsoft.com/en-us/azure/confidential-computing/virtual-machine-solutions-amd).
-The regions and zones are selected based on VM size availability.
+We will set that value in the environment variable `$RG` for the remainder of this section:
 
 ```bash
 RG=<myResourceGroup>
+```
+
+### Creating a Proximity Placement Group
+Azure [recommends](https://learn.microsoft.com/en-us/azure/virtual-network/virtual-network-test-latency?tabs=windows#tips-and-best-practices-to-optimize-network-latency) launching VMs in the same proximity placement group (ppg) to reduce network latency.
+We will create a ppg in the regions that we will launch the trusted and untrusted VMs used in [the following section](#creating-vms).
+
+#### Untrusted PPG
+```bash
+az ppg create \
+  --resource-group $RG \
+  --name tee_benchmark_ppg \
+  --location swedencentral \
+  --intent-vm-sizes Standard_D8as_v5
+```
+
+#### Trusted PPG
+```bash
+az ppg create \
+  --resource-group $RG \
+  --name tee_benchmark_ppg_cvm \
+  --location northeurope \
+  --zone 2 \
+  --intent-vm-sizes Standard_DC8as_v5
+```
+
+
+### Creating VMs
+We will select VMs that use the same hardware to compare between confidential and non-confidential VMs.
+The set of supported sizes for Confidential VMs can be found [here](https://learn.microsoft.com/en-us/azure/confidential-computing/virtual-machine-solutions-amd).
+The following scripts use general compute VMs with 8 vCPUs.
+The regions and zones are selected based on VM size availability.
+
+We will use Ubuntu 20.04 LTS since that is the only version supported by [CCF](https://github.com/microsoft/CCF) at the moment and we may one day use some of their code.
+The VM name and admin username are arbitrary.
+Change the VM name accordingly if another VM with the same name already exists.
+
+Create the correct VMs based on whether you're running the benchmark on [untrusted](#untrusted-vms) or [trusted](#confidential-vms) VMs.
+
+#### Untrusted VMs
+```bash
 az vm create \
   --resource-group $RG \
-  --name tee_benchmark \
+  --name tee_benchmark_client \
   --admin-username azureuser \
   --generate-ssh-keys \
   --public-ip-sku Standard \
+  --accelerated-networking \
+  --ppg tee_benchmark_ppg \
   --location swedencentral \
   --size Standard_D8as_v5 \
   --image Canonical:0001-com-ubuntu-server-focal:20_04-lts:latest 
 ```
 
-If launching a Confidential VM, replace the last 3 lines above with:
+#### Confidential VMs
 ```bash
+az vm create \
+  --resource-group $RG \
+  --name tee_benchmark_cvm \
+  --admin-username azureuser \
+  --generate-ssh-keys \
+  --public-ip-sku Standard \
+  --accelerated-networking \
+  --ppg tee_benchmark_ppg_cvm \
   --location northeurope \
   --zone 2 \
   --size Standard_DC8as_v5 \
@@ -72,6 +115,7 @@ If launching a Confidential VM, replace the last 3 lines above with:
   --enable-vtpm
 ```
 
+### Using the VMs
 Once launched, write down the public IP of the VM. I will assume your VM's IP is <IP>. We can now SSH into the VM:
 ```bash
 IP=<IP>
@@ -79,3 +123,22 @@ ssh azureuser@$IP
 ```
 
 Now you can clone this Github project on the VM and run it from there.
+
+## Benchmarking network latency
+On all VMs, execute the following after cloning this repo:
+```bash
+cloud/install.sh
+```
+
+We will assume that the public IP of the server is `<IP>`.
+On the server, execute the following line:
+```bash
+IP=<IP>
+sudo sockperf sr --tcp -i $IP -p 12345
+```
+
+On the client, execute the following line:
+```bash
+IP=<IP>
+sockperf ping-pong -i $IP --tcp -m 350 -t 101 -p 12345 --full-rtt
+```
