@@ -30,7 +30,7 @@ An example of running the benchmark for 60 seconds with 30 seconds of warmup, on
 ```
 
 ## Benchmarking disk I/Os
-Go to the `file` directory, run the `install.sh` script to install sysbench, then run `read_run.sh` or `write_run.sh` to get the read/write numbers.
+Go to the `file` directory, and run `read_run.sh` or `write_run.sh` to get the read/write numbers.
 Note that to simulate disk read/writes (and avoid cache), DIRECTIO is turned on for reads, and every write is followed by a fsync.
 
 ## Benchmarking in the cloud
@@ -138,13 +138,10 @@ az vm delete \
   --yes
 ```
 
-Despite our best efforts, there may be additional related resources left running; check the Azure portal to shut those down manually.
+Despite our best efforts, there may be additional related resources left running, namely the network security group (NSG), public IP, and VNET; check the Azure portal to shut those down manually.
 
 ## Benchmarking network latency
-On all VMs, execute the following after cloning this repo:
-```bash
-cloud/install.sh
-```
+Create at least 2 trusted (or untrusted) VMs by following [the guide above](#creating-vms). Clone and [install](#installation) this repo on all VMs.
 
 We will assume that the **private** IP of the server is `<IP>`.
 On the server, execute the following line:
