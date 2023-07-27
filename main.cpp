@@ -24,6 +24,10 @@ int secondsSince(std::chrono::steady_clock::time_point startTime) {
     return std::chrono::duration_cast<std::chrono::seconds>(getTime() - startTime).count();
 }
 
+int toMicroseconds(int seconds) {
+    return seconds * 1000000;
+}
+
 
 /** Human-readable test of each function, not meant for benchmarking performance. */
 void miniTest() {
@@ -68,7 +72,7 @@ void hashTest(const config conf) {
     }
 
     std::cout << "Hashed " << numHashes << " blocks of " << conf.blockSize << " bits in " << conf.runSecs << "s." << std::endl;
-    std::cout << "Hash throughput: " << numHashes / conf.runSecs << " /s." << std::endl;
+    std::cout << "Hash latency: " << (double) toMicroseconds(conf.runSecs) / numHashes << "µs." << std::endl;
 }
 
 void encryptionTest(const config conf) {
@@ -90,7 +94,7 @@ void encryptionTest(const config conf) {
     }
 
     std::cout << "Encrypted " << numEncryptions << " blocks of " << conf.blockSize << " bits in " << conf.runSecs << "s." << std::endl;
-    std::cout << "Encryption throughput: " << numEncryptions / conf.runSecs << " /s." << std::endl;
+    std::cout << "Encryption latency: " << (double) toMicroseconds(conf.runSecs) / numEncryptions << "µs." << std::endl;
 }
 
 void decryptionTest(const config conf) {
@@ -115,7 +119,7 @@ void decryptionTest(const config conf) {
     }
 
     std::cout << "Decrypted " << numDecryptions << " blocks of " << conf.blockSize << " bits in " << conf.runSecs << "s." << std::endl;
-    std::cout << "Decryption throughput: " << numDecryptions / conf.runSecs << " /s." << std::endl;
+    std::cout << "Decryption latency: " << (double) toMicroseconds(conf.runSecs) / numDecryptions << "µs." << std::endl;
 }
 
 config parseArgs(int argc, char* argv[]) {
