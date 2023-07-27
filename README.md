@@ -85,10 +85,12 @@ Create the correct VMs based on whether you're running the benchmark on [untrust
 ```bash
 az vm create \
   --resource-group $RG \
-  --name tee_benchmark_client \
+  --name tee_benchmark \
   --admin-username azureuser \
   --generate-ssh-keys \
   --public-ip-sku Standard \
+  --nic-delete-option Delete \
+  --os-disk-delete-option Delete \
   --accelerated-networking \
   --ppg tee_benchmark_ppg \
   --location swedencentral \
@@ -104,6 +106,8 @@ az vm create \
   --admin-username azureuser \
   --generate-ssh-keys \
   --public-ip-sku Standard \
+  --nic-delete-option Delete \
+  --os-disk-delete-option Delete \
   --accelerated-networking \
   --ppg tee_benchmark_ppg_cvm \
   --location northeurope \
@@ -124,13 +128,25 @@ ssh azureuser@$IP
 
 Now you can clone this Github project on the VM and run it from there.
 
+### Shutting down the VMs
+When you're done with the VMs, shut them down with the following command, replacing the name with the name of the VM you wish to shut down:
+```bash
+az vm delete \
+  --resource-group $RG \
+  --name tee_benchmark \
+  --no-wait \
+  --yes
+```
+
+Despite our best efforts, there may be additional related resources left running; check the Azure portal to shut those down manually.
+
 ## Benchmarking network latency
 On all VMs, execute the following after cloning this repo:
 ```bash
 cloud/install.sh
 ```
 
-We will assume that the public IP of the server is `<IP>`.
+We will assume that the **private** IP of the server is `<IP>`.
 On the server, execute the following line:
 ```bash
 IP=<IP>
