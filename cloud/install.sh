@@ -7,7 +7,7 @@ sudo apt-get install -y automake
 sudo apt-get install -y autoconf
 sudo apt-get install -y libtool
 sudo apt update
-sudo apt upgrade
+sudo apt upgrade -y
 
 git clone https://github.com/mellanox/sockperf
 cd sockperf/
